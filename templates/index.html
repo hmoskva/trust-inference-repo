@@ -1,0 +1,229 @@
+{% extends "layout.html" %}
+{% block title %} Home | {{ super() }} {% endblock %}
+{% block content %}
+<br/>
+<br/>
+
+    <div class="row" style="height: 100%;">
+        <div class="col-sm-8 col-sm-offset-2" style="background-color: #ffffff; box-shadow: 0 4px 8px 0 black, 0 6px 20px 0 black; height:100%;">
+            <div class="row">
+                <br/>
+                <br/>
+
+                <div class="col-sm-8 col-sm-offset-2">
+                     <table id="datatable-responsive" class="table table-responsive table-bordered table-hover dt-responsive nowrap">
+                        <caption class="text-center"><h4 style="font-family: sans-serif">Nodes in Graph</h4></caption>
+                        <thead>
+                            <tr class="info" style="font-family: FontAwesome;">
+                               <th class="text-center">S/N</th>
+                               <th class="text-center">Node ID</th>
+                               <th class="text-center">Node Rating</th>
+{#                               <th class="text-center">View Neighbours</th>#}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if users|length != 0 %}
+                                {% for item in users %}
+                                    <tr name="{{ item.idd }}">
+                                        <td>{{ users.index(item) + 1 }}</td>
+                                        <td>{{ item.name }}</td>
+                                        <td>{{ item.rating }}</td>
+{#                                        <td class="view_user"><button class="btn btn-info btn-sm view_user" data-toggle="modal" data-target="#myModal"><i class="fa fa-search">#}
+{#                                                </i>&nbsp;View#}
+{#                                            </button>#}
+{#                                        </td>#}
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-2">
+                <hr style="width: 100%; height: 1px; background-color: #000000;"/>
+            </div>
+        </div>
+         <div class="row">
+              <div class="col-sm-8 col-sm-offset-2">
+                     <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">CALCULATE TRUST</h3>
+                        </div>
+                        <div class="panel-body">
+                                     <form class="text-center" action="{{ url_for('calculate_trust') }}" method="post" role="form">
+                                                              <div class="form-group">
+                                                              <label for="name">Choose Nodes</label>
+                                                        <select class="form-control" name="drp_user" id="drpuser" onChange="changecat(this.value);">
+                                                            <option value="0" disabled selected>--SELECT--</option>
+                                                            {% for user in users %}
+                                                                <option value="{{ user.name }}">
+                                                                    {{ user.name }}
+                                                                </option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                            <div class="form-group">
+                                                        <select class="form-control" name="drp_ego" id="drp_ego">
+                                                            <option value="0" disabled selected>--SELECT--</option>
+{#                                                                {% if users|length != 0 %}#}
+{#                                                                    {% for user in users %}#}
+{#                                                                        <option value="{{ user.name}}">#}
+{#                                                                            {{ user.name }}#}
+{#                                                                        </option>#}
+{#                                                                    {% endfor %}#}
+{##}
+{#                                                                {% endif %}#}
+
+                                                        </select>
+                                                    </div>
+                                                        <button type="submit" class="btn btn-success" data-toggle="modal" data-target="#trustModal">
+                                                            <i class="fa fa-calculator"></i>&nbsp;Calculate
+                                                        </button>
+
+                                            </form>
+                                            <br/>
+{#                                            {% if trust %}#}
+                                                {% if trust is number %}
+                                                    <div class="alert alert-success alert-dismissable">
+                                                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                                                        <p>Computed Score: {{ trust }}<br/>
+                                                            Source: {{ source }}<br/>
+                                                            Sink: {{ sink }}
+                                                        <p>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="alert alert-danger alert-dismissable">
+                                                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                                                        <p>{{ trust }}<p>
+                                                    </div>
+                                                {% endif %}
+
+
+
+{#                                                {% endif %}#}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-8 col-sm-offset-2">
+                    {% if error %}
+                        <p class="alert alert-danger text-center"><strong>Error:</strong> {{ error }} </p>
+                    {% endif %}
+                 </div>
+            </div>
+            {% if trust is number %}
+            {% if recommendations|length != 0 %}
+                <div class="row">
+                                                   <div class="col-sm-12">
+                                                            <h3 class="text-center">Recommendation</h3>
+                                                   </div>
+                                                    </div>
+                                                    <div class="row">
+                                                    <div class="col-sm-10 col-sm-offset-1">
+                                                        <div class="col-sm-offset-4 col-sm-4">
+                                                            <div class="thumbnail">
+                                                                <img src="/static/img/user.jpg" class="img-circle img-responsive">
+                                                            </div>
+                                                            <div class="caption">
+                                                                <h4 class="text-center">{{ recommendations[0] }}</h4>
+                                                                <p class="text-center">Inferred trust > 0.5.<br/> <b>{{ sink }} can be trusted</b></p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    </div>
+                                                     <div class="row">
+                                                     {% if recommendations[1:]|length != 0 %}
+                                                   <div class="col-sm-12">
+                                                            <h3 class="text-center">{{ recommendations[0] }}'s Most Trusted Friends</h3>
+                                                   </div>
+                                                   {% endif %}
+                                                    </div>
+                                                    <div class="row">
+                                                    <div class="col-sm-10 col-sm-offset-1">
+                                                        {% for user in recommendations [1:] %}
+                                                            <div class="col-sm-4">
+                                                                <div class="thumbnail">
+                                                                    <img src="/static/img/user.jpg" class="img-circle img-responsive">
+                                                                </div>
+                                                                <div class="caption">
+                                                                    <h4 class="text-center">{{ user.name }}</h4>
+                                                                </div>
+                                                            </div>
+
+                                                        {% endfor %}
+                                                    </div>
+
+                                                    </div>
+
+                                                {% else %}
+                                                    <div class="row">
+                                                        <div class="col-sm-8 col-sm-offset-2">
+                                                            <div class="alert alert-danger alert-dismissable">
+                                                         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                                                            <p class="text-center">Trust < 0.5. <br/><b>{{ sink }} not recommended</b>.<br>
+
+                                                     </div>
+                                                        </div>
+                                                    </div>
+
+                                                {% endif %}
+                                                {% endif %}
+
+            <div class="row">
+                <div class="col-sm-12" style="height:200px; background-image: url('/static/img/8.jpg'); background-repeat: no-repeat; background-size: cover;">
+
+                </div>
+
+            </div>
+         </div>
+     </div>
+<div style="box-shadow: 0 4px 8px 0 black, 0 6px 20px 0 black;" class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">User Friends List</h4>
+                 </div>
+                 <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-8 col-sm-offset-2">
+                            <table class="table table-responsive table-striped table-hover">
+                                <thead>
+                                    <tr class="info">
+                                        <th>Node ID</th>
+                                        <th>Neighbour ID</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if friends|length != 0 %}
+                                        {% for friend in friends %}
+                                            <tr class="info">
+                                                {% for value in friend.values() %}
+                                                    <td>{{ value }}</td>
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr class="warning">
+                                            <td>There are no friends</td>
+                                        </tr>
+                                    {% endif %}
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+

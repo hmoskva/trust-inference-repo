@@ -1,0 +1,61 @@
+{#{%  import flask_bootstrap as fb  %}#}
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE-edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Trust Inference{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/dataTables.bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/icons.css">
+{#    <link rel="stylesheet" type="text/css" href="/static/css/style.css">#}
+{#    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">#}
+</head>
+<body style="height: 100%; background-image: url('/static/img/1.jpg'); ">
+{#style="background-image: url('/static/img/bg1.jpg'); background-repeat: no-repeat; background-size: cover;"#}
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <button type="button" class="navbar-toggle" data-toggle="collapse"
+                data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">TrustInference</a>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="active"><a href="/templates/index.html">Home</a></li>
+                    <li><a href="/">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+
+        {% block content %}{% endblock %}
+
+{#        <footer class="footer">#}
+{#            <p>Sogbesan Habib<br/> &copy; 2017</p>#}
+{#        </footer>#}
+
+    </div>
+
+
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/jquery.dataTables.min.js"></script>
+    <script src="/static/js/dataTables.bootstrap.js"></script>
+    <script src="/static/js/dataTables.buttons.min.js"></script>
+    <script src="/static/js/dataTables.responsive.min.js"></script>
+    <script src="/static/js/dataTables.scroller.min.js"></script>
+    <script src="/static/js/buttons.bootstrap.min.js"></script>
+    <script src="/static/js/datatables.init.js"></script>
+    <script src="/static/js/id_get.js"></script>
+
+    {% block scripts %} {% endblock %}
+
+</body>
+</html>
