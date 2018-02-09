@@ -28,6 +28,7 @@ def about():
 @app.route('/iris', methods=['GET', 'POST'])
 def iris():
     return
+
 @app.route('/calculate_trust', methods=['GET', 'POST'])
 def calculate_trust():
     graph_setup.setup_iris()

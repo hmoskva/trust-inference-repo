@@ -1,6 +1,7 @@
 __author__ = 'Habibd'
 import sql
 import math
+import classification
 global g
 
 
@@ -110,25 +111,25 @@ class Graph:
     def get_vertices(self):
         return self.vertices.keys()
 
-    @staticmethod
-    def main():
-
-        gr = Graph()
-        tr = Trust()
-        import graph_setup
-        graph_setup.setup_iris()
-        # print(graph_setup.g.vertices['mtz5prif'].get_predecessor())
-        print(tr.check2(graph_setup.g.vertices['Folabz_']))
-        # print(tr.iris(graph_setup.g.vertices['mtz5prif'], graph_setup.g.vertices['HabibDee']))
-        # gr.add_edge('Habib', 'Damola', interactions=['Like', 'Comment', 'Tag'], relationship_type= 'close relationship',
-        #            simcheck_a=['sports', 'csc'], simcheck_b=['csc', 'sports', 'parties'])
-        # gr.add_edge('Habib', 'Dapo', interactions=['Like', 'Comment', 'Tag'], relationship_type= 'close relationship',
-        #            simcheck_a=['sports', 'csc'], simcheck_b=['csc', 'sports', 'alcohol'])
-        # gr.add_edge('Damola', 'Mo', interactions=['Comment', 'Tag'], relationship_type= 'close relationship'
-        #            , simcheck_b=['csc', 'games'])
-        # #
-        # # print(tr.tidal(gr.vertices['Habib'], gr.vertices['Mo']))
-        # print(tr.relationship_trust(gr.vertices['Oluso_LA'], gr.vertices['HabibDee']))
+    # @staticmethod
+    # def main():
+    #
+    #     gr = Graph()
+    #     tr = Trust()
+    #     import graph_setup
+    #     graph_setup.setup_iris()
+    #     # print(graph_setup.g.vertices['mtz5prif'].get_predecessor())
+    #     # print(tr.check2(graph_setup.g.vertices['Folabz_']))
+    #     # print(tr.iris(graph_setup.g.vertices['mtz5prif'], graph_setup.g.vertices['HabibDee']))
+    #     # gr.add_edge('Habib', 'Damola', interactions=['Like', 'Comment', 'Tag'], relationship_type= 'close relationship',
+    #     #            simcheck_a=['sports', 'csc'], simcheck_b=['csc', 'sports', 'parties'])
+    #     # gr.add_edge('Habib', 'Dapo', interactions=['Like', 'Comment', 'Tag'], relationship_type= 'close relationship',
+    #     #            simcheck_a=['sports', 'csc'], simcheck_b=['csc', 'sports', 'alcohol'])
+    #     # gr.add_edge('Damola', 'Mo', interactions=['Comment', 'Tag'], relationship_type= 'close relationship'
+    #     #            , simcheck_b=['csc', 'games'])
+    #     # #
+    #     # # print(tr.tidal(gr.vertices['Habib'], gr.vertices['Mo']))
+    #     print(tr.interaction_trust(gr.vertices['HabibDee'], gr.vertices['mtz5prif']))
         # print(g.iris(g.vertices['Damola'], g.vertices['Mo']))
         # print(g.vertices['Habib'].get_relationship_type(g.vertices['Dapo']))
         # print(g.similarity_trust(g.vertices['Habib'], g.vertices['Damola']))
@@ -156,6 +157,7 @@ class Trust:
             return None
 
     def interaction_trust(self, source, neighbour):
+        itr = 0
         if neighbour in source.get_neighbours():
             pos = 0
             list_of_interactions = source.get_interactions(neighbour)
@@ -164,35 +166,70 @@ class Trust:
             retweets = list_of_interactions['retweets']
             likes = list_of_interactions['likes']
 
+            tot_mentions = sql.get_num_all_interactions_by_type(source.idd, 'mention',
+                                                                neighbour.idd)
+            tot_rts = sql.get_num_all_interactions_by_type(source.idd, 'retweet',
+                                                           neighbour.idd)
+            tot_likes = sql.get_num_all_interactions_by_type(source.idd, 'like',
+                                                             neighbour.idd)
+            print(mentions)
+            pos_mentions = []
+            for m in mentions:
+                if m in tot_mentions:
+                    pos_mentions.append(m)
+                # res = classification.sentiment(m[1].strip('@'))
+                # if res[0] == 'pos' and res[1] >= 0.6:
+                #     pos_mentions.append(m)
+
+            compt_list = [(pos_mentions, len(tot_mentions)), (retweets, tot_rts), (likes, tot_likes)]
+
+            for i in compt_list:
+                if i[1] != 0:
+                    itr += ((1/3)*(len(i[0])/i[1]))
+        return itr
+
+            # do 3 more checks
+        #     if tot_mentions == 0 and tot_rts != 0 and tot_likes != 0:
+        #         i_trust = (0.7 * (len(likes) / tot_likes)) + (0.3 * (len(retweets) / tot_rts))
+        #     elif tot_mentions != 0 and tot_rts == 0 and tot_likes != 0:
+        #         i_trust = (0.6 * (len(likes) / tot_likes)) + (0.4 * (len(mentions) / tot_mentions))
+        #     elif tot_mentions != 0 and tot_rts != 0 and tot_likes == 0:
+        #         i_trust = (0.4 * (len(retweets) / tot_rts)) + (0.6 * (len(mentions) / tot_mentions))
+        #     else:
+        #         i_trust = (0.5 * (len(likes)/tot_likes)) + (0.2 *(len(retweets)/tot_rts)) + (0.3*(len(pos_mentions)/tot_mentions))
+        # return i_trust
+
+
+
             # Looping through interactions by type
-            if len(likes) != 0:
-                for i in range(len(likes)):
-                    # Assume all interactions of type Like are positive
-                    pos += 1
-            if len(mentions) != 0:
-                for entry in mentions:
-                    # Compute satisfaction criteria: 1 + Log(r/n)
-                    # r = no of reactions, n = number of friends. Log for limiting.
-                    no_reactions = sql.get_no_reactions(post_id=entry[0])
-                    if no_reactions != 0 and len(source.get_neighbours()) != 0:
-                        sat_val = 1 + math.log((no_reactions/len(source.get_neighbours())))
-                        if sat_val >= 0.5:
-                            pos += 1
-
-            if len(retweets) != 0:
-                for i in range(len(retweets)):
-                    # Assume all interactions of type retweet are positive
-                    pos += 1
-
-            tot_interactions = len(mentions) + len(retweets) + len(likes)
-            print('total--> '+str(tot_interactions)+" "+source.name+"-->"+neighbour.name)
-            neg = tot_interactions - pos
-            if pos > neg:
-                return 1 - (neg / pos)
-            else:
-                return 0
-        else:
-            return None
+        #     if len(likes) != 0:
+        #         for i in range(len(likes)):
+        #             # Assume all interactions of type Like are positive
+        #             pos += 1
+        #     if len(mentions) != 0:
+        #         for entry in mentions:
+        #             # Compute satisfaction criteria: 1 + Log(r/n)
+        #             # r = no of reactions, n = number of friends. Log for limiting.
+        #             no_reactions = sql.get_no_reactions(post_id=entry[0])
+        #             if no_reactions != 0 and len(source.get_neighbours()) != 0:
+        #                 sat_val = 1 + math.log((no_reactions/len(source.get_neighbours())))
+        #                 if sat_val >= 0.5:
+        #                     pos += 1
+        #
+        #     if len(retweets) != 0:
+        #         for i in range(len(retweets)):
+        #             # Assume all interactions of type retweet are positive
+        #             pos += 1
+        #
+        #     tot_interactions = len(mentions) + len(retweets) + len(likes)
+        #     print('total--> '+str(tot_interactions)+" "+source.name+"-->"+neighbour.name)
+        #     neg = tot_interactions - pos
+        #     if pos > neg:
+        #         return 1 - (neg / pos)
+        #     else:
+        #         return 0
+        # else:
+        #     return None
 
     def similarity_trust(self, source, neighbour):
         # Using mutual friends to determine similarity
@@ -440,22 +477,10 @@ class Trust:
 
         return message
 
-    # def check2(self, start):
-    #     # A DFS to check if goal is in path
-    #     stack = []
-    #     visited = []
-    #     stack.append(start)
-    #     while len(stack) != 0:
-    #         current = stack.pop()
-    #         visited.append(current)
-    #         if len(current.get_neighbours()) != 0:
-    #             for neighbour in current.get_neighbours():
-    #                 if neighbour not in visited and neighbour not in stack:
-    #                     stack.append(neighbour)
-    #
-    #     return [node.name for node in visited]
-
-
 
 if __name__ == "__main__":
-    Graph.main()
+    gr = Graph()
+    tr = Trust()
+    import graph_setup
+    graph_setup.setup_iris()
+    print(gr.vertices)

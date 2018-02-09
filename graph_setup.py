@@ -9,7 +9,9 @@ def main():
     # 0
     setup_iris()
     # print(g.vertices['mtz5prif'].get_predecessor())
-    print(g.vertices['HabibDee'].get_relationship_type(g.vertices['Oluso_LA']))
+    # friends = sql.get_friends(452454655)
+    # for i in range(len(friends)):
+    print(process_interactions(452454655, 3347256251)['mentions'])
     # print()
     # print(get_relationship_type(3347256251,293779614))
 

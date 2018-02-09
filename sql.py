@@ -1,19 +1,51 @@
 __author__ = 'Habibd'
 import MySQLdb
+import classification
 
 db = MySQLdb.connect("localhost", "root", "", "project_repo")
 cursor = db.cursor()
 
 
 def main():
-    0
-    # print(len(get_faves(609693, 452454655)))
+
+    # print(get_faves(452454655, 3347256251))
     # print(get_no_reactions(875859459674976257))
-    print(get_retweets(293779614 , 3347256251))
+    print(get_num_all_interactions_by_type(452454655, 'mention', 3347256251))
     # print(get_friends('452454655'))
     # print(test('HabibDee'))
     # db.close()
 
+def get_num_all_interactions_by_type(user, type, friend=None):
+    if type not in ['like', 'mention', 'retweet']:
+        raise Exception('Invalid type')
+
+    ufriends = get_friends(user)
+    ffriends = get_friends(friend)
+
+    if type == 'mention':
+        c = 0
+        umentions = [get_mentions(user, f['friend_id']) for f in ufriends]
+        pos_mentions = []
+        for li in umentions:
+            for i in li:
+                res = classification.sentiment(i[1].strip('@'))
+                if res[0] == 'pos' and res[1] >= 0.6:
+                    pos_mentions.append(li)
+
+        # for m in pos_mentions:
+        #     c += len(m)
+        return pos_mentions
+    elif type == 'like':
+        c = 0
+        flikes = [get_faves(friend, f['friend_id']) for f in ffriends]
+        for m in flikes:
+            c += len(m)
+        return c
+    c = 0
+    frts = [get_retweets(friend, f['friend_id']) for f in ffriends]
+    for m in frts:
+        c += len(m)
+    return c
 
 def get_users(id=None):
     if id:
